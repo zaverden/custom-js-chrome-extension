@@ -1,8 +1,7 @@
 // inspired by http://ryanmorr.com/using-mutation-observers-to-watch-for-element-availability/
 const listeners = []
 const doc = window.document
-const MutationObserver =
-  window.MutationObserver || window.WebKitMutationObserver
+
 let observer = null
 
 const check = () => {
@@ -22,14 +21,14 @@ const ready = (selector, fn) => {
   // Store the selector and callback to be monitored
   listeners.push({
     selector: selector,
-    fn: fn
+    fn: fn,
   })
   if (!observer) {
     // Watch for changes in the document
-    observer = new MutationObserver(check)
+    observer = new window.MutationObserver(check)
     observer.observe(doc.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
     })
   }
   // Check if the element is currently in the DOM
@@ -37,4 +36,4 @@ const ready = (selector, fn) => {
 }
 
 // Expose `ready`
-window.customjsReady = ready
+;(window as any).customjsReady = ready

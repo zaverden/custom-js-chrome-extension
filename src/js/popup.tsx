@@ -1,4 +1,3 @@
-import 'chrome-extension-async'
 import React from 'react'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { render } from 'react-dom'
@@ -10,9 +9,9 @@ import 'antd/dist/antd.css'
 const theme = createMuiTheme({
   typography: {
     button: {
-      textTransform: 'none'
-    }
-  }
+      textTransform: 'none',
+    },
+  },
 })
 
 const initApp = () => {

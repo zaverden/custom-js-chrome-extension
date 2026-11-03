@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es2018", "dom"],
-    "types": ["jasmine"],
+    "types": ["chrome"],
     "outDir": "./build/",
     "baseUrl": "./src/js",
     "paths": {
@@ -20,7 +20,9 @@
     "moduleResolution": "node",
     "target": "es6",
     "jsx": "react",
-    "allowJs": true
+    "allowJs": true,
+    "skipLibCheck": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "integration_test"],
+  "include": ["src"]
 }

@@ -18,7 +18,7 @@ const alias = {
   libs: srcPath('libs'),
   stores: srcPath('stores'),
   svgIcons: srcPath('svgIcons'),
-  img: path.join(__dirname, 'src/img')
+  img: path.join(__dirname, 'src/img'),
 }
 
 const secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js')
@@ -33,7 +33,7 @@ const fileExtensions = [
   'svg',
   'ttf',
   'woff',
-  'woff2'
+  'woff2',
 ]
 
 if (fileSystem.existsSync(secretsPath)) {
@@ -53,14 +53,14 @@ const HtmlFiles = ['popup'].map(
       filename: `${name}.html`,
       chunks: [name],
       minify: {
-        collapseWhitespace: true
-      }
+        collapseWhitespace: true,
+      },
     })
 )
 
 const entry = Object.assign(
-  ...['popup', 'background', 'run', 'base'].map((name) => ({
-    [name]: path.join(__dirname, 'src', 'js', `${name}.tsx`)
+  ...['popup', 'background', 'base', 'runner'].map((name) => ({
+    [name]: path.join(__dirname, 'src', 'js', `${name}.tsx`),
   }))
 )
 
@@ -68,7 +68,7 @@ const options = {
   entry,
   output: {
     path: path.join(__dirname, 'build'),
-    filename: '[name].js'
+    filename: '[name].js',
   },
   module: {
     rules: [
@@ -76,27 +76,27 @@ const options = {
         test: /\.m?js/,
         type: 'javascript/auto',
         resolve: {
-          fullySpecified: false
-        }
+          fullySpecified: false,
+        },
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: new RegExp(`\\.(${fileExtensions.join('|')})$`),
         loader: 'file-loader',
         options: {
-          name: '[name].[ext]'
+          name: '[name].[ext]',
         },
         include: path.resolve(__dirname, 'src'),
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.html$/,
         loader: 'html-loader',
         include: path.resolve(__dirname, 'src'),
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.(js|ts)x?$/,
@@ -105,29 +105,29 @@ const options = {
             loader: 'ts-loader',
             options: {
               transpileOnly: true,
-              experimentalWatchApi: true
-            }
-          }
+              experimentalWatchApi: true,
+            },
+          },
         ],
-        include: path.resolve(__dirname, 'src')
-      }
-    ]
+        include: path.resolve(__dirname, 'src'),
+      },
+    ],
   },
   resolve: {
     alias,
     extensions: fileExtensions
       .map((extension) => '.' + extension)
-      .concat(['.css', '.jsx', '.js', '.tsx', 'ts'])
+      .concat(['.css', '.jsx', '.js', '.tsx', '.ts']),
   },
   plugins: [
     // expose and write the allowed env vars on the compiled bundle
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new MiniCssExtractPlugin({
       filename: '[name].css',
-      chunkFilename: '[id].css'
+      chunkFilename: '[id].css',
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV)
+      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV),
     }),
     new CopyWebpackPlugin({
       patterns: [
@@ -139,16 +139,16 @@ const options = {
               JSON.stringify({
                 description: process.env.npm_package_description,
                 version: process.env.npm_package_version,
-                ...JSON.parse(content.toString())
+                ...JSON.parse(content.toString()),
               })
             )
-          }
-        }
-      ]
+          },
+        },
+      ],
     }),
     ...HtmlFiles,
-    new ProgressBarPlugin()
-  ]
+    new ProgressBarPlugin(),
+  ],
 }
 
 if (env.NODE_ENV === 'development') {
@@ -157,5 +157,5 @@ if (env.NODE_ENV === 'development') {
 
 module.exports = (plugins = []) => ({
   ...options,
-  plugins: [...options.plugins, ...plugins]
+  plugins: [...options.plugins, ...plugins],
 })

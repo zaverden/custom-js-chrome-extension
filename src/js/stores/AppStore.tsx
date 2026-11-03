@@ -20,9 +20,10 @@ const getDomainKey = (host: Host) => {
 export default class AppStore {
   store: Store
 
-  constructor (store) {
+  constructor(store) {
     makeObservable(this, {
       mode: observable,
+      world: observable,
       loading: observable,
       autoSaveHandle: observable,
       saved: observable,
@@ -58,13 +59,15 @@ export default class AppStore {
       removeHost: action,
       goTo: action,
       clearSaveError: action,
-      setMode: action
+      setMode: action,
     })
 
     this.store = store
   }
 
   mode = 'javascript'
+
+  world = 'MAIN'
 
   loading = true
 
@@ -96,58 +99,59 @@ export default class AppStore {
 
   saveError = null
 
-  get include () {
+  get include() {
     return this.store.IncludeStore.include
   }
 
-  get extra () {
+  get extra() {
     return this.store.IncludeStore.extra
   }
 
-  get domain () {
+  get domain() {
     return `${this.protocol}//${this.host}`
   }
 
-  get target () {
+  get target() {
     if (typeof this.matchedHost === 'object' && this.matchedHost.isRegex) {
       return this.matchedHost.pattern
     }
     return this.domain
   }
 
-  get differentURL () {
+  get differentURL() {
     return !this.tab.url.startsWith(this.domain)
   }
 
-  get tabMode () {
+  get tabMode() {
     return this.tab.url === window.location.href
   }
 
-  get customjs () {
+  get customjs() {
     return {
       config: {
         enable: this.enable,
         include: this.include,
-        extra: this.extra
+        extra: this.extra,
+        world: this.world,
       },
-      source: encodeSource(this.source)
+      source: encodeSource(this.source),
     }
   }
 
-  get size () {
+  get size() {
     return sizeof(this.source)
   }
 
-  get domainKey () {
+  get domainKey() {
     return getDomainKey(this.matchedHost)
   }
 
-  init = ({ domain, isRegex, pattern }) => {
+  init = ({ domain, isRegex, pattern }: any = {}) => {
     chrome.runtime.sendMessage(
       { method: 'getData', domain, isRegex, pattern },
       async (response) => {
         if (!response || typeof response.host !== 'string') {
-          if (response.error) {
+          if (response?.error) {
             this.loadError = response.error
             return
           }
@@ -160,7 +164,7 @@ export default class AppStore {
           host,
           matchedHost,
           protocol,
-          tab
+          tab,
         })
 
         this.hosts = await getHosts(key)
@@ -172,7 +176,7 @@ export default class AppStore {
             return
           } else {
             this.hosts.push(this.domain)
-            this.saveHosts()
+            await this.saveHosts()
             return this.init({ domain, isRegex, pattern })
           }
         }
@@ -191,17 +195,18 @@ export default class AppStore {
       config: {
         enable = false,
         include = '',
-        extra = this.store.IncludeStore.placeholder
-      } = {}
+        world = 'MAIN',
+        extra = this.store.IncludeStore.placeholder,
+      } = {},
     } = customjs
-    Object.assign(this, { enable, source: decodeSource(source) })
+    Object.assign(this, { enable, world, source: decodeSource(source) })
     Object.assign(this.store.IncludeStore, { include, extra })
     this.error = ''
     this.loading = false
   }
 
   saveHosts = async (hosts = this.hosts) => {
-    setHosts(hosts.slice())
+    await setHosts(hosts.slice())
   }
 
   loadDraft = () => {
@@ -262,45 +267,39 @@ export default class AppStore {
         domain,
         matchedHost,
         customjs,
-        reload: !this.tabMode
+        reload: !this.tabMode,
       },
       (err) => {
         if (err) {
-          this.saveError = err
+          this.saveError = err.error || err.message || String(err)
         } else {
-          this.truth = this.customjs
-          this.removeDraft()
+          this.truth = customjs
+          if (isEqual(customjs, this.customjs)) this.removeDraft()
+          else this.saveDraft()
         }
       }
     )
   }
 
   removeHost = ({
-    host,
-    reload = false
+    host = this.matchedHost,
+    reload = false,
   }: { host?: Host; reload?: boolean } = {}) => {
-    if (!host) {
-      host = this.matchedHost
-    }
-    this.loadCustomjs()
-    const message = { method: 'removeData', reload }
-    let newHosts
-    if (typeof host === 'string') {
-      Object.assign(message, { domain: host })
-      newHosts = this.hosts.filter((x) => x !== host)
-    } else {
-      Object.assign(message, host, { domain: this.domain })
-      const { pattern } = host
-      newHosts = this.hosts.filter(
-        (x) => typeof x === 'string' || !x.isRegex || x.pattern !== pattern
+    const message: any = { method: 'removeData', reload }
+    if (typeof host === 'string') Object.assign(message, { domain: host })
+    else Object.assign(message, host)
+    chrome.runtime.sendMessage(message, (result) => {
+      if (result?.error) {
+        this.saveError = result.error
+        return
+      }
+      this.hosts = this.hosts.filter(
+        (x) => getDomainKey(x) !== getDomainKey(host)
       )
-    }
-    this.saveHosts(newHosts)
-    chrome.runtime.sendMessage(message)
-    this.hosts = newHosts
-    this.removeDraft(getDomainKey(host))
+      this.loadCustomjs()
+      this.removeDraft(getDomainKey(host))
+    })
   }
-
   goTo = () => chrome.runtime.sendMessage({ method: 'goTo', link: this.domain })
 
   clearSaveError = () => {

@@ -15,29 +15,30 @@ const style = {
   margin: 0,
   height: '100%',
   width: '100%',
-  lineHeight: '150%'
+  lineHeight: '150%',
 }
 
 const setOptions = {
+  useWorker: false,
   enableBasicAutocompletion: true,
   enableLiveAutocompletion: true,
   enableSnippets: true,
   showLineNumbers: true,
-  tabSize: 2
+  tabSize: 2,
 }
 
 export default observer(() => {
   const { source, onChangeSource, mode } = useStore().AppStore
   return (
     <AceEditor
-      theme='tomorrow'
+      theme="tomorrow"
       value={source}
       onChange={onChangeSource}
       showGutter
       showPrintMargin
       highlightActiveLine
       editorProps={{
-        $blockScrolling: Infinity
+        $blockScrolling: Infinity,
       }}
       {...{ mode, style, setOptions }}
     />

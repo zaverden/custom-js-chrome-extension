@@ -5,7 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from '@material-ui/core'
 import { useStore } from './StoreContext'
 import { observer } from 'mobx-react'
@@ -16,41 +16,46 @@ export default observer(({ closePopup }) => {
   const { target } = AppStore
   const closeDialog = () => setOpen(false)
 
-  return [
-    <Button onClick={() => setOpen(true)} key='reset'>
-      Reset
-    </Button>,
-    <Dialog open={open} onClose={closeDialog} key='dialog'>
-      <DialogTitle>Remove all codes and external scripts?</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Reset will remove your codes and external scripts, and delete current
-          domain/pattern: "{target}".
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={closeDialog}>Cancel</Button>
-        <Button
-          color='primary'
-          onClick={() => {
-            AppStore.removeHost({ reload: false })
-            closeDialog()
-            closePopup()
-          }}
-        >
+  return (
+    <>
+      {' '}
+      {[
+        <Button onClick={() => setOpen(true)} key="reset">
           Reset
-        </Button>
-        <Button
-          color='secondary'
-          onClick={() => {
-            AppStore.removeHost({ reload: true })
-            closeDialog()
-            closePopup()
-          }}
-        >
-          Reset & Refresh
-        </Button>
-      </DialogActions>
-    </Dialog>
-  ]
+        </Button>,
+        <Dialog open={open} onClose={closeDialog} key="dialog">
+          <DialogTitle>Remove all codes and external scripts?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Reset will remove your codes and external scripts, and delete
+              current domain/pattern: "{target}".
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDialog}>Cancel</Button>
+            <Button
+              color="primary"
+              onClick={() => {
+                AppStore.removeHost({ reload: false })
+                closeDialog()
+                closePopup()
+              }}
+            >
+              Reset
+            </Button>
+            <Button
+              color="secondary"
+              onClick={() => {
+                AppStore.removeHost({ reload: true })
+                closeDialog()
+                closePopup()
+              }}
+            >
+              Reset & Refresh
+            </Button>
+          </DialogActions>
+        </Dialog>,
+      ]}
+    </>
+  )
 })

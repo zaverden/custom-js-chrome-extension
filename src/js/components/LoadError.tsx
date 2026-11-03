@@ -5,21 +5,21 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from '@material-ui/core'
 
-export default () => {
+export default ({ error }: any) => {
   return (
     <Dialog open>
       <DialogTitle>Can not load data</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Can not load data, please try to open a new window and try again.
+          {error || 'Open a regular HTTP(S) page and try again.'}
         </DialogContentText>
         <DialogActions>
           <Button onClick={() => window.close()}>Cancel</Button>
           <Button
-            color='primary'
+            color="primary"
             onClick={() => {
               chrome.windows.create({}, () => {
                 window.close()

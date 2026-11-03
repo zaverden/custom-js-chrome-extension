@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getHostKey, getHostName } from 'libs'
+import { getHostKey, getHostName, getHosts } from 'libs'
 import Loading from 'components/Loading'
 import queryString from 'query-string'
 import { useStore } from './StoreContext'
@@ -13,7 +13,7 @@ const Host = (props) => {
   const query = isRegex ? { isRegex, pattern } : { domain: key }
   const to = {
     pathname: '/',
-    search: queryString.stringify(query)
+    search: queryString.stringify(query),
   }
   return <Link to={to}>{getHostName(props)}</Link>
 }
@@ -27,14 +27,17 @@ const Regex = (isRegex) => {
 
 export default observer((props) => {
   useEffect(() => {
-    AppStore.init({})
+    getHosts().then((hosts) => {
+      AppStore.hosts = hosts
+      AppStore.loading = false
+    })
   }, [])
   const navigate = useNavigate()
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const rowSelection = {
     selectedRowKeys,
     onChange: setSelectedRowKeys,
-    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT]
+    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
   }
 
   const { AppStore } = useStore()
@@ -47,7 +50,7 @@ export default observer((props) => {
     return {
       key: getHostKey(host),
       host,
-      isRegex: Boolean(host.isRegex)
+      isRegex: typeof host === 'object' && host.isRegex,
     }
   })
   const columns = [
@@ -60,14 +63,14 @@ export default observer((props) => {
         const aKey = getHostKey(a.host)
         const bKey = getHostKey(b.host)
         return aKey.localeCompare(bKey)
-      }
+      },
     },
     {
       title: 'isRegex',
       dataIndex: 'isRegex',
       key: 'isRegex',
       render: Regex,
-      sorter: (a, b) => a.isRegex - b.isRegex
+      sorter: (a, b) => a.isRegex - b.isRegex,
     },
     {
       title: 'Action',
@@ -81,23 +84,23 @@ export default observer((props) => {
               AppStore.removeHost({ host })
               message.success(`Successfully remove host: ${name}`)
             }}
-            okText='Yes'
-            cancelText='No'
+            okText="Yes"
+            cancelText="No"
           >
-            <Button type='danger'>Delete</Button>
+            <Button danger>Delete</Button>
           </Popconfirm>
         )
-      }
-    }
+      },
+    },
   ]
   const hasSelected = selectedRowKeys.length > 0
   return (
-    <div style={{ overflow: 'scroll', height: '100vh' }}>
+    <div style={{ overflow: 'scroll', height: '100%' }}>
       <Affix offsetTop={0.01}>
         <PageHeader
           ghost={false}
           onBack={() => navigate(-1)}
-          title='All Hosts & Patterns'
+          title="All Hosts & Patterns"
           extra={
             <>
               <span style={{ marginLeft: 8 }}>
@@ -124,10 +127,10 @@ export default observer((props) => {
                     }`
                   )
                 }}
-                okText='Yes'
-                cancelText='No'
+                okText="Yes"
+                cancelText="No"
               >
-                <Button type='danger' disabled={!hasSelected}>
+                <Button danger disabled={!hasSelected}>
                   Delete
                 </Button>
               </Popconfirm>

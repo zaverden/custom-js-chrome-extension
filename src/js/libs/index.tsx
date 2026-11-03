@@ -7,7 +7,7 @@ export const setLastFocusedWindowId = (lastFocusedWindowId) => {
 
 export const getLastFocusedWindowId = async () => {
   const { lastFocusedWindowId } = await chrome.storage.local.get({
-    lastFocusedWindowId: null
+    lastFocusedWindowId: null,
   })
   return lastFocusedWindowId
 }
@@ -22,7 +22,12 @@ const getQueryInfo = (windowId) => {
 export const getActiveTab = async () => {
   const windowId = await getLastFocusedWindowId()
   const queryInfo = getQueryInfo(windowId)
-  const tabs = await chrome.tabs.query({ ...queryInfo, active: true })
+  let tabs
+  try {
+    tabs = await chrome.tabs.query({ ...queryInfo, active: true })
+  } catch {
+    tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true })
+  }
   if (tabs.length <= 0) {
     throw new Error('No active tab! This is impossible')
   }
@@ -37,7 +42,7 @@ export const encodeSource = (script) => {
   // base64 may be smaller, but does not handle unicode characters
   // attempt base64 first, fall back to escaped text
   try {
-    return BASE64_PREFIX + window.btoa(script)
+    return BASE64_PREFIX + btoa(script)
   } catch (e) {
     return UTF8_PREFIX + encodeURIComponent(script)
   }
@@ -45,7 +50,7 @@ export const encodeSource = (script) => {
 
 export const decodeSource = (source) => {
   if (source.startsWith(BASE64_PREFIX)) {
-    return window.atob(source.replace(BASE64_PREFIX, ''))
+    return atob(source.replace(BASE64_PREFIX, ''))
   }
   if (source.startsWith(UTF8_PREFIX)) {
     return decodeURIComponent(source.replace(UTF8_PREFIX, ''))
@@ -57,7 +62,7 @@ export const decodeSource = (source) => {
 }
 
 export const getHosts = async (key = '') => {
-  const result = await chrome.storage.sync.get({ hosts: [] })
+  const result = await chrome.storage.local.get({ hosts: [] })
   if (Array.isArray(result.hosts) && result.hosts.length > 0) {
     return result.hosts
   }
@@ -76,16 +81,20 @@ const validHost = (host) => {
 }
 
 export const setHosts = async (hosts = []) => {
-  chrome.storage.sync.set({
-    hosts: uniqBy(hosts.filter(validHost), JSON.stringify)
+  return chrome.storage.local.set({
+    hosts: uniqBy(hosts.filter(validHost), JSON.stringify),
   })
 }
 
 export const clearHosts = () => {
-  chrome.storage.sync.remove('hosts')
+  chrome.storage.local.remove('hosts')
 }
 
-export const findMatchedHosts = (hosts = [], url = {}, message = {}) => {
+export const findMatchedHosts = (
+  hosts = [],
+  url: any = {},
+  message: any = {}
+) => {
   const { isRegex, pattern } = message
   if (isRegex && pattern) {
     return hosts.filter((host) => host.isRegex && host.pattern === pattern)
@@ -94,7 +103,11 @@ export const findMatchedHosts = (hosts = [], url = {}, message = {}) => {
     if (typeof host === 'string') {
       return host === url.origin
     } else if (typeof host === 'object') {
-      return new RegExp(host.pattern).test(url.href)
+      try {
+        return new RegExp(host.pattern).test(url.href)
+      } catch {
+        return false
+      }
     }
     return false
   })

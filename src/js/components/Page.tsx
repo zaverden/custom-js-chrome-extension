@@ -26,7 +26,7 @@ import { useLocation } from 'react-router-dom'
 const toolbarStyle = {
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center'
+  alignItems: 'center',
 }
 
 export default observer((props) => {
@@ -59,7 +59,7 @@ export default observer((props) => {
       style={{
         display: 'grid',
         gridTemplateRows: 'auto auto 1fr auto',
-        height: '100vh'
+        height: '100%',
       }}
     >
       <div style={toolbarStyle}>
@@ -67,6 +67,20 @@ export default observer((props) => {
           <Save onSave={() => AppStore.save()} />
           <Reset closePopup={closePopup} />
           <ModeSelect />
+          <label style={{ margin: 8 }}>
+            Context:{' '}
+            <select
+              aria-label="Execution context"
+              value={AppStore.world}
+              onChange={(e) => {
+                AppStore.world = e.target.value
+                AppStore.autoSave()
+              }}
+            >
+              <option value="MAIN">Page (MAIN)</option>
+              <option value="USER_SCRIPT">Isolated (USER_SCRIPT)</option>
+            </select>
+          </label>
           <Format />
           <NewTabLink />
           <HostTableLink />
@@ -79,12 +93,7 @@ export default observer((props) => {
         <div>
           <Hosts />
           <NewPattern />
-          <Goto
-            goTo={() => {
-              AppStore.goTo()
-              closePopup()
-            }}
-          />
+          <Goto />
         </div>
         <Include />
       </div>
@@ -97,9 +106,9 @@ export default observer((props) => {
         <Size />
         <DonateLink />
       </div>
-      <div id='error' className='error is-hidden'>
+      <div id="error" className="error is-hidden">
         <strong>Custom JavaScript says:</strong>
-        <p className='red-text'>
+        <p className="red-text">
           It seems that this page cannot be modified with me..
         </p>
         <span>tip: Try refresh page</span>

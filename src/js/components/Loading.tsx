@@ -2,19 +2,20 @@ import React, { Component } from 'react'
 import { CircularProgress } from '@material-ui/core'
 
 export default class Loading extends Component {
+  timer: ReturnType<typeof setTimeout>
   state = { tooLong: false }
 
-  componentDidMount () {
+  componentDidMount() {
     this.timer = setTimeout(() => this.setState({ tooLong: true }), 100)
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     if (this.timer) {
       clearTimeout(this.timer)
     }
   }
 
-  render () {
+  render() {
     if (!this.state.tooLong) {
       return 'Loading...'
     }
@@ -24,7 +25,7 @@ export default class Loading extends Component {
           display: 'flex',
           height: '100%',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <CircularProgress size={128} />

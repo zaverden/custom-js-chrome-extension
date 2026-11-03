@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'production'
 const webpack = require('webpack')
 const config = require('../webpack.config')()
 const TerserJSPlugin = require('terser-webpack-plugin')
@@ -13,13 +14,15 @@ webpack(
       minimizer: [
         new TerserJSPlugin({
           test: /\.js(\?.*)?$/i,
-          parallel: true
+          parallel: true,
         }),
-        new OptimizeCSSAssetsPlugin({})
-      ]
-    }
+        new OptimizeCSSAssetsPlugin({}),
+      ],
+    },
   },
-  function (err) {
+  function (err, stats) {
     if (err) throw err
+    console.log(stats.toString({ colors: false, modules: false }))
+    if (stats.hasErrors()) process.exitCode = 1
   }
 )

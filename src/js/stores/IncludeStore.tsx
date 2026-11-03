@@ -9,7 +9,7 @@ const underscore =
 export default class IncludeStore {
   store: Store
 
-  constructor (store) {
+  constructor(store) {
     makeObservable(this, {
       extraOpen: observable,
       extra: observable,
@@ -19,7 +19,7 @@ export default class IncludeStore {
       placeholder: computed,
       onSelect: action,
       toggleExtraOpen: action,
-      onUpdateExtra: action
+      onUpdateExtra: action,
     })
 
     this.store = store
@@ -34,31 +34,31 @@ export default class IncludeStore {
   includes = [
     {
       name: 'jQuery 1.12.4',
-      path: '/jquery/1.12.4/jquery.min.js'
+      path: '/jquery/1.12.4/jquery.min.js',
     },
     {
       name: 'jQuery 2.2.4',
-      path: '/jquery/2.2.4/jquery.min.js'
+      path: '/jquery/2.2.4/jquery.min.js',
     },
     {
       name: 'jQuery 3.2.1',
-      path: '/jquery/3.2.1/jquery.min.js'
+      path: '/jquery/3.2.1/jquery.min.js',
     },
     {
       name: 'Indefinite Observable 1.0.1',
-      path: '/indefinite-observable/1.0.1/indefinite-observable.js'
+      path: '/indefinite-observable/1.0.1/indefinite-observable.js',
     },
     {
       name: 'MooTools 1.6.0',
-      path: '/mootools/1.6.0/mootools.min.js'
-    }
+      path: '/mootools/1.6.0/mootools.min.js',
+    },
   ]
 
-  get extraValue () {
-    return (this.extra || '').replace(';', '\n')
+  get extraValue() {
+    return (this.extra || '').replace(/;/g, '\n')
   }
 
-  get placeholder () {
+  get placeholder() {
     return hint + '\n' + underscore
   }
 
@@ -72,7 +72,7 @@ export default class IncludeStore {
   }
 
   onUpdateExtra = (value = '') => {
-    this.extra = value.replace('\n', ';')
+    this.extra = value.replace(/\r?\n/g, ';')
     this.store.AppStore.autoSave()
   }
 }

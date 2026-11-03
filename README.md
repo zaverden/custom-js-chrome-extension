@@ -1,85 +1,90 @@
-# DEPRECATED
+# custom-js
 
-**There is no way to provide the same experience in latest Chrome. The extension won't be updated to manifest v3. More details in https://github.com/xcv58/Custom-JavaScript-for-Websites-2/issues/868**
+Личный форк с переносом на Manifest V3. Проверено на Windows 11 в установленном **Яндекс Браузере 26.10.0.1854**, Chromium 152. Исходный проект xcv58 архивирован; лицензия MIT сохранена.
 
-# Custom JavaScript for websites
+## Установка готовой сборки
 
-[![CircleCI](https://circleci.com/gh/xcv58/Custom-JavaScript-for-Websites-2.svg?style=svg)](https://circleci.com/gh/xcv58/Custom-JavaScript-for-Websites-2)
-[![Build Status](https://travis-ci.org/xcv58/Custom-JavaScript-for-Websites-2.svg?branch=master)](https://travis-ci.org/xcv58/Custom-JavaScript-for-Websites-2)
-[![dependencies Status](https://david-dm.org/xcv58/Custom-JavaScript-for-Websites-2/status.svg)](https://david-dm.org/xcv58/Custom-JavaScript-for-Websites-2)
-[![devDependencies Status](https://david-dm.org/xcv58/Custom-JavaScript-for-Websites-2/dev-status.svg)](https://david-dm.org/xcv58/Custom-JavaScript-for-Websites-2?type=dev)
+1. Откройте `browser://extensions`, включите **Режим разработчика**.
+2. Нажмите **Загрузить распакованное расширение** и выберите папку `dist\customjs-mv3` в этом репозитории. Если используете ZIP, сначала распакуйте его и выберите вложенную папку с `manifest.json`.
+3. В сведениях нового расширения включите **Разрешить пользовательские скрипты / Allow user scripts**. Разрешите доступ к нужным сайтам; для регулярных выражений по любым сайтам удобнее доступ ко всем сайтам.
+4. Откройте обычную HTTP(S)-страницу, нажмите значок расширения, затем **Check / Apply**. Сообщение `User scripts ready` означает, что вызов API прошёл успешно.
+5. Введите код, включите его переключателем и нажмите **Save**. В обычном всплывающем редакторе текущая вкладка обновится после сохранения. При редактировании в отдельной вкладке перезагрузите целевой сайт самостоятельно.
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/92a8617dc60beef87408/maintainability)](https://codeclimate.com/github/xcv58/Custom-JavaScript-for-Websites-2/maintainability)
-[![DeepScan Grade](https://deepscan.io/api/projects/737/branches/1388/badge/grade.svg)](https://deepscan.io/dashboard/#view=project&pid=737&bid=1388)
+Новое расширение имеет отдельный постоянный ID **fefpehedemediodnlhcpfhnbdhmihach**. Старое `ddbjnfjiigjmcpcpkmhogomapikjbjdk` удалять или заменять не нужно. Сборка не обращается к его хранилищам. При обновлении заменяйте файлы в установленной папке и нажимайте перезагрузку карточки расширения. Публичный ключ в manifest сохраняет ID; это не закрытый ключ.
 
-[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+## Что сохранено и изменено
 
+Сохранены Ace, подсветка JavaScript/CSS, форматирование, черновики, список сайтов, регулярные выражения, включение/отключение, `customjsReady`, выбор jQuery и дополнительные библиотеки. Режим CSS в Ace меняет подсветку: исполняемый код по-прежнему JavaScript.
 
-[Custom JavaScript for Websites 2 - Chrome Extension](https://xcv58.xyz/inject-js)
+Исполнение идёт через `chrome.userScripts.execute()`, без `eval` в расширении, без MV2 background page и без вставки пользовательского кода через data-URL. Статический content script запрашивает запуск для собственного documentId на document_idle. Service worker проверяет URL, выбирает сохранённые правила и исполняет каждый источник отдельным классическим скриптом. Пользовательский код не оборачивается в функцию или условный блок: сохраняются верхнеуровневые let/var/function и директива use strict. Адреса других сайтов не получают пользовательский код. Локальное состояние восстанавливается при новом запуске service worker; постоянная регистрация строкового кода не требуется. На уже открытых страницах изменения действуют после перезагрузки.
 
-Run custom JavaScript on any website.
-Use this tool to inject custom javascript in any website.
+Скрипты и кэш хранятся **локально**, с разрешением unlimitedStorage. Автоматическая межкомпьютерная синхронизация старого `storage.sync` заменена явным экспортом/импортом JSON. JSON-экспорт содержит сайты, исходники и настройки; библиотечный кэш не включён, поэтому импорт активных библиотек требует доступа к их адресам.
 
-Your scripts are kept in the local storage and applied across domain URLs.
+**Page (MAIN)** — режим по умолчанию, близкий к старому расширению: доступны `window` сайта и его библиотеки. Страница видит пользовательские глобальные переменные. CSP сайта продолжает ограничивать вызовы `eval`, `new Function`, динамические script-теги и сетевые запросы, выполняемые самим пользовательским кодом.
 
-You can use jQuery 1.11.x or 2.1.x or your own external scripts.
+**Isolated (USER_SCRIPT)** — отдельные JavaScript-глобальные переменные при общем DOM. jQuery сайта там недоступен; можно выбрать собственную библиотеку. В этом мире разрешено вычисление строкового кода, но привилегированные API расширения пользовательскому коду не предоставляются.
 
-Use cases:
-- site debugging (wrong list sort, etc.)
-- hiding annoyng popups and Ads
-- custom UI
-- anything you can think of :)
+Поддерживаются HTTP(S), точное совпадение origin (включая порт), RegExp по полному URL и фреймы с разрешёнными адресами. Внутренние страницы браузера, страницы других расширений и `file://` не поддерживаются. Несколько совпавших правил запускаются отдельно; не полагайтесь на порядок между правилами. Зависимые операции объединяйте в одном правиле.
 
-New features:
-- Ace Editor (formating, highlight, undo/redo by hotkeys)
-- Draft auto save (so doesn't matter when you close the window without saving)
-- Hosts (websites) switch (you can browse customjs of other websites)
-- Include external script (eq. Underscore.js is cool)
+## jQuery и внешние библиотеки
 
-Thanks to:
-- Ace - http://ace.c9.io/
-- Pure - http://purecss.io/
+Библиотеки загружаются service worker при первом сохранении активного правила, сохраняются с SHA-256 и временем получения, затем передаются в `userScripts` как код. Они исполняются в указанном порядке перед исходником правила. Разделители дополнительных адресов — перевод строки и `;`; строки с `#` игнорируются. Адрес `//...` означает HTTPS.
 
-# base.js
-You can find `base.js` at `extension/lib/base.js`.
-It provides useful functions for you. You can directly use all functions in your
-JavaScript code. To avoid name conflict, all functions start with `customjs`.
+При навигации к CDN обращений нет. **Refresh libraries** явно обновляет сохранённые версии. Если загрузка не удалась или код содержит синтаксическую ошибку, прежние сохранённые данные сохраняются. Кэш не обновляется автоматически при каждом запуске браузера.
 
-Now there're only one function:
+В Яндексе проверены jQuery **1.12.4, 2.2.4 и 3.2.1** в MAIN и 3.2.1 в USER_SCRIPT, включая базовые DOM-операции на странице с `script-src 'none'`. Это не означает, что любой jQuery-плагин, `$.getScript`, `$.globalEval` или произвольная удалённая библиотека обходит CSP сайта. Остальные прежние предустановки оставлены, но не проверены отдельно.
 
-## `customjsReady`
+## Перенос из установленной версии 3.4.12
+
+Выполняйте команды в PowerShell из корня репозитория:
+
+```powershell
+powershell -NoProfile -File tools\backup-legacy.ps1
+node tools\export-legacy.cjs "C:\Users\zaverden\Documents\CustomJS-MV3-backups\ИМЯ_КОПИИ"
+```
+
+Первая команда делает новую копию Local Extension Settings и Sync Extension Settings старого ID, сохраняет оригинальный manifest и сверяет SHA-256 файлов с доступом на совместное чтение. Существующий каталог копии не перезаписывается. При изменении файлов во время копирования команда останавливается; повторите после обычного завершения браузера. Принудительно закрывать его не нужно.
+
+Вторая команда открывает **только копии** в отдельном тестовом профиле установленного Яндекса. Минимальное MV3-расширение с публичным ключом старой версии читает скопированные `chrome.storage` и не имеет исполняющего кода. Старые пользовательские скрипты не запускаются.
+
+Результаты остаются на Windows:
+
+- `legacy-storage-export.json` — полный сырой экспорт обоих chrome.storage;
+- `legacy-import.json` — проверенный формат для нового расширения;
+- `legacy-skipped.json` — неподдерживаемые записи, сохранённые отдельно;
+- `import-readiness.json` — число правил и ошибки проверки, без выполнения кода.
+
+В новом редакторе выберите **Import JSON → legacy-import.json**, проверьте количество и нажмите **Import selected backup**. Замена существующих сайтов разрешается отдельным флажком. Перед импортом редактор экспортирует текущее состояние и сохраняет внутреннюю копию до импорта. Сырые оригиналы и старое установленное расширение не меняются.
+
+Старые несохранённые черновики из DOM localStorage не входят в этот перенос. Старые записи без сохранённого кода сохраняются как пустые сайты, кроме неподдерживаемых внутренних адресов. В сделанной 3 ноября 2026 копии обнаружено 22 записи: в import-файл подготовлены 20 сайтов/шаблонов и все 15 сохранённых скриптов; две пустые записи chrome-extension вынесены отдельно. Синтаксическая проверка и проверка формата библиотек ошибок не нашли. Это ещё не проверка поведения личных скриптов на их сайтах.
+
+## Сборка и проверки на Windows
+
+Проверенные локальные инструменты: Node.js 18.12.1, npm 8.19.2 и Git for Windows. Убедитесь, что `C:\Program Files\nodejs` есть в PATH.
+
+```powershell
+npm ci --legacy-peer-deps --ignore-scripts
+npm test
+npm run test:yandex
+npm run test:jquery
+npm run test:context
+powershell -NoProfile -File tools\package-windows.ps1
+```
+
+`package-lock.json` фиксирует зависимости; для этой ветки используйте npm. Старый yarn.lock относится к прежней сборке. `npm test` проверяет компилятор/миграцию, типы исходников и production webpack build. Старые integration_test относятся к MV2 и не входят в новые проверки. `test:jquery` обращается к Google CDN; основной браузерный тест использует локальные фикстуры.
+
+Браузерные тесты запускают установленный Яндекс в отдельных каталогах `work/`, отладка доступна только на loopback Windows. Они закрывают только свои экземпляры. Ваш текущий профиль не используется. Путь к другому исполняемому файлу можно задать переменной YANDEX_BROWSER.
+
+**Граница проверки перезапуска:** проверены закрытие и новый запуск тестового процесса Яндекса, повторная загрузка тестового расширения через CDP и восстановление локальных данных/кэша без сети; отдельно проверяется остановка и повторный запуск service worker. Загрузка через CDP в этом Яндексе временная и не сохраняется как обычная установка. Обычный повторный запуск после ручной установки через «Загрузить распакованное расширение» в основном профиле ещё требует пользовательской проверки. Поддержка не заявляется для других версий Яндекса только на основании версии Chromium.
+
+Публикация расширения в магазинах выполняется отдельно от публикации исходников в GitHub.
+
+## customjsReady
+
 ```javascript
-customjsReady('.nav', function(element) {
-  // do something
-});
+customjsReady('.nav', function (element) {
+  element.style.display = 'none'
+})
 ```
 
-The `customjsReady` wiil be called when an element matching the selector
-is added to the DOM. You can find more details from:
-http://ryanmorr.com/using-mutation-observers-to-watch-for-element-availability/
-
-Special thanks to [Ryan Morr](http://ryanmorr.com/)
-
-## How do I inject large JavaScript
-
-You can host the JS code in public accessible url and dynamically load and eval it. A sample implementation like this:
-
-```
-customjsReady('body', function(element) {
-  fetch('https://gist.githubusercontent.com/xcv58/5aaeda690ace2f468d51dbf9c65a3980/raw/a8b1c59223892fb2be08490b00c84fa4a029bb8e/test.js')
-    .then((res) => res.text())
-    .then((js) => {
-      console.log('works in fetch', js)
-      eval(js);
-    })
-});
-```
-
-# Why Custom JavaScript for Websites 2
-Since the author haven't update original extension for almost one year.
-Its website http://hromadadan.com is also unavailable.
-I can not find the author.
-
-But the sync feature is urgent. So this repos is here.
-
-You can download older versions from: https://crx.dam.io/ext/ddbjnfjiigjmcpcpkmhogomapikjbjdk.html
+Функция вызывает обработчик для найденных и позднее добавленных элементов. Исходная идея: Ryan Morr, MutationObserver. Исходный проект: https://github.com/xcv58/Custom-JavaScript-for-Websites-2 . API: https://developer.chrome.com/docs/extensions/reference/api/userScripts .

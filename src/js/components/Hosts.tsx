@@ -22,8 +22,8 @@ export default observer((props) => {
       <Select
         value={JSON.stringify(matchedHost)}
         onChange={(e) => {
-          const value = JSON.parse(e.target.value)
-          const query = {}
+          const value = JSON.parse(String(e.target.value))
+          const query: any = {}
           if (typeof value === 'string') {
             query.domain = value
           } else {
