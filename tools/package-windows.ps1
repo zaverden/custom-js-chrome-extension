@@ -9,6 +9,13 @@ $target=Join-Path $dist $Name
 New-Item -ItemType Directory -Force $target | Out-Null
 Copy-Item "$build\*" $target -Recurse -Force
 Copy-Item "$root\LICENSE" $target -Force
+# Carry the bundled editor/formatter licenses and notices into the distributable.
+foreach($package in @('monaco-editor','prettier','dompurify','marked','typescript')) {
+ $packageRoot=Join-Path (Join-Path $root 'node_modules') $package
+ $licenseTarget=Join-Path (Join-Path $target 'licenses') $package
+ New-Item -ItemType Directory -Force $licenseTarget | Out-Null
+ Get-ChildItem $packageRoot -File | Where-Object {$_.Name -match '^(LICENSE|THIRD.PARTY|ThirdParty)'} | ForEach-Object {Copy-Item $_.FullName $licenseTarget -Force}
+}
 Copy-Item "$root\README.md" "$target\INSTALL.md" -Force
 Copy-Item "$root\README.md" "$dist\INSTALL.md" -Force
 $zip=Join-Path $dist "$Name-$version.zip"

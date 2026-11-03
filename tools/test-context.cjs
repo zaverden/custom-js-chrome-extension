@@ -22,8 +22,9 @@ const first = http.createServer(handler),
       'chrome-extension://' +
         id +
         '/popup.html#/?domain=' +
-        encodeURIComponent(origin)
+        encodeURIComponent(origin),
     )
+    await popup.waitForSelector('#code-editor .monaco-editor')
     const pattern = { isRegex: true, pattern: '/scope$' }
     const data = {
       hosts: [origin, pattern],
@@ -43,10 +44,10 @@ const first = http.createServer(handler),
               backup,
               replace: true,
             }),
-          data
+          data,
         )
       ).imported,
-      2
+      2,
     )
     const target = await s.context.newPage()
     await target.goto(origin + '/scope')
@@ -60,7 +61,7 @@ const first = http.createServer(handler),
     assert.deepEqual(actual, { lexical: 17, global: 19, fn: 23, strict: true })
     console.log(
       'PASS native MAIN top-level let, var, function and strict directive',
-      JSON.stringify(actual)
+      JSON.stringify(actual),
     )
     await target.goto(other + '/other')
     await target.waitForTimeout(500)
@@ -70,10 +71,10 @@ const first = http.createServer(handler),
         lexical: typeof customjsLexical,
         global: typeof customjsVar,
       })),
-      { origin: 'undefined', lexical: 'undefined', global: 'undefined' }
+      { origin: 'undefined', lexical: 'undefined', global: 'undefined' },
     )
     console.log(
-      'PASS unmatched origin/port receives no user code or hoisted declarations'
+      'PASS unmatched origin/port receives no user code or hoisted declarations',
     )
   } finally {
     if (s) await s.close()

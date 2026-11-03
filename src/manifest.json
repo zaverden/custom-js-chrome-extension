@@ -1,50 +1,37 @@
 {
-    "manifest_version":  3,
-    "name":  "custom-js",
-    "short_name":  "custom-js",
-    "author":  "xcv58",
-    "minimum_chrome_version":  "135",
-    "icons":  {
-                  "16":  "icon-16.png",
-                  "19":  "icon-19.png",
-                  "32":  "icon-32.png",
-                  "38":  "icon-38.png",
-                  "48":  "icon-48.png",
-                  "128":  "icon-128.png"
-              },
-    "background":  {
-                       "service_worker":  "background.js"
-                   },
-    "content_security_policy":  {
-                                    "extension_pages":  "script-src \u0027self\u0027; object-src \u0027self\u0027"
-                                },
-    "permissions":  [
-                        "storage",
-                        "unlimitedStorage",
-                        "tabs",
-                        "userScripts"
-                    ],
-    "action":  {
-                   "default_icon":  "icon-48.png",
-                   "default_popup":  "popup.html",
-                   "default_title":  "custom-js"
-               },
-    "host_permissions":  [
-                             "http://*/*",
-                             "https://*/*"
-                         ],
-    "key":  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq8Ygs68hCimPdDzOAFN1tg08MJ171sG4B9MUUAC/i544aJwMW1Slxnf6CfGjLNF/9eXW6dcB0NLTtt5F4obRG+PcOO+nGn8erqADcYK9R4oXWGMB4fOGOCXT1Yi+Gw1HJkKb+HzaX/r8V4bjtb8A3Kr7lvNb+AfomXd7dpU6P1xP0wDTMP05hSLtJxqF3dHg2si6O52EGp4kq/bOlEcl3xnF92WV6eLkKfG30FVCZA20jltfJMn3aSh0RfqTQE4ZiXb/jU9KjJkIOGQrhCpD+3hPr0UySud1z/ueUR1Ggj77qZ8o0Bpp2aCSWZCZ3mepivteJ/K/fVlul6Ul4B95SwIDAQAB",
-    "content_scripts":  [
-                            {
-                                "run_at":  "document_idle",
-                                "all_frames":  true,
-                                "matches":  [
-                                                "http://*/*",
-                                                "https://*/*"
-                                            ],
-                                "js":  [
-                                           "runner.js"
-                                       ]
-                            }
-                        ]
+  "manifest_version": 3,
+  "name": "custom-js",
+  "short_name": "custom-js",
+  "author": "xcv58",
+  "minimum_chrome_version": "135",
+  "icons": {
+    "16": "icon-16.png",
+    "19": "icon-19.png",
+    "32": "icon-32.png",
+    "38": "icon-38.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
+  },
+  "permissions": ["storage", "unlimitedStorage", "tabs", "userScripts"],
+  "action": {
+    "default_icon": "icon-48.png",
+    "default_popup": "popup.html",
+    "default_title": "custom-js"
+  },
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq8Ygs68hCimPdDzOAFN1tg08MJ171sG4B9MUUAC/i544aJwMW1Slxnf6CfGjLNF/9eXW6dcB0NLTtt5F4obRG+PcOO+nGn8erqADcYK9R4oXWGMB4fOGOCXT1Yi+Gw1HJkKb+HzaX/r8V4bjtb8A3Kr7lvNb+AfomXd7dpU6P1xP0wDTMP05hSLtJxqF3dHg2si6O52EGp4kq/bOlEcl3xnF92WV6eLkKfG30FVCZA20jltfJMn3aSh0RfqTQE4ZiXb/jU9KjJkIOGQrhCpD+3hPr0UySud1z/ueUR1Ggj77qZ8o0Bpp2aCSWZCZ3mepivteJ/K/fVlul6Ul4B95SwIDAQAB",
+  "content_scripts": [
+    {
+      "run_at": "document_idle",
+      "all_frames": true,
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["runner.js"]
+    }
+  ]
 }

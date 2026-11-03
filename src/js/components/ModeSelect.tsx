@@ -15,6 +15,7 @@ export default observer(() => {
   return (
     <FormControl>
       <Select
+        SelectDisplayProps={{ 'aria-label': 'Language mode' }}
         value={mode}
         onChange={(e) => {
           const value = e.target.value

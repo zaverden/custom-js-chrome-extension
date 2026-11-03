@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   min-width: 800px;
   min-height: 600px;
   height: 100%;
@@ -11,7 +12,7 @@ html, body {
 
 #app {
   height: 100%;
-  max-width: 1024px;
+  max-width: none;
   margin: auto;
   padding: 0 0.5rem;
 }
@@ -29,7 +30,7 @@ a,
 a:hover,
 .blue-text,
 .blue-text:hover {
-  color: #0F14F3;
+  color: #0f14f3;
 }
 
 .red-text,
@@ -75,7 +76,6 @@ a:hover {
   bottom: -2px;
   margin-left: 2px;
 }
-
 
 .include {
   text-align: right;
@@ -129,7 +129,8 @@ a:hover {
   width: 100%;
 }
 
-.controls { }
+.controls {
+}
 
 .controls__save,
 .controls__reset,
@@ -163,7 +164,6 @@ a:hover {
   overflow: hidden;
 }
 
-
 /**
  * Font icons
  */
@@ -175,12 +175,75 @@ a:hover {
   src: url('../font/customjs.svg?96127482#customjs') format('svg');
 }
 
-[class^="icon-"]:before, [class*=" icon-"]:before {
+[class^='icon-']:before,
+[class*=' icon-']:before {
   display: inline-block;
   font-variant: normal;
-  font-family: "customjs";
+  font-family: 'customjs';
 }
 
-.icon-left-open:before { content: '\e800'; } /* '' */
-.icon-right-open:before { content: '\e801'; } /* '' */
-.icon-share:before { content: '\e802'; } /* '' */
+.icon-left-open:before {
+  content: '\e800';
+} /* '' */
+.icon-right-open:before {
+  content: '\e801';
+} /* '' */
+.icon-share:before {
+  content: '\e802';
+} /* '' */
+
+.code-editor-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  min-height: 0;
+  border: 1px solid #d9dee7;
+  overflow: hidden;
+}
+.code-editor-tools,
+.code-editor-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  background: #f5f7fa;
+  color: #4b5563;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.code-editor-tools > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.code-editor-tools select {
+  margin-left: 4px;
+}
+.code-editor-tools button {
+  border: 1px solid #ccd2dc;
+  border-radius: 4px;
+  padding: 2px 6px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+.code-editor-tools button[aria-pressed='true'] {
+  background: #e0eaff;
+  border-color: #7b9ddd;
+}
+.code-editor-surface {
+  min-height: 0;
+  overflow: hidden;
+}
+.code-editor-status {
+  border-top: 1px solid #e1e5eb;
+  font-size: 11px;
+}
+.editor-format-error {
+  display: inline-block;
+  padding: 4px 8px;
+  color: #a12727;
+  white-space: pre-wrap;
+  max-width: 100%;
+  font-size: 12px;
+}

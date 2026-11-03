@@ -1,80 +1,23 @@
-version: 2
-references:
-  yarn_key: &yarn_key
-    v1-dependencies-{{ checksum "yarn.lock" }}
-
-  save_yarn_cache: &save_yarn_cache
-    save_cache:
-      key: *yarn_key
-      paths:
-        - node_modules
-
-  restore_yarn_cache: &restore_yarn_cache
-    restore_cache:
-      key: *yarn_key
-
+version: 2.1
 jobs:
   build-test:
     docker:
-      - image: circleci/node:17.2.0
+      - image: cimg/node:22.22
     steps:
       - checkout
-      - *restore_yarn_cache
-      - run: yarn --ignore-engines
-      - *save_yarn_cache
-      - run: yarn lint:ts
-      - run: yarn test
-      - run: yarn deploy
-      - run: ls -l build/* build.zip
-      - run: sha256sum build.zip | tee SHA256SUMS.txt
-      - run: find build -type f -exec ls {} \; | sort -f | xargs sha256sum | tee -a SHA256SUMS.txt
-      - run: find build -type f -exec ls {} \; | sort -f | xargs cat | sha256sum | tee -a SHA256SUMS.txt
-      - run: mkdir dist && mv build.zip SHA256SUMS.txt dist
+      - restore_cache:
+          keys:
+            - npm-v1-{{ checksum "package-lock.json" }}
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - save_cache:
+          key: npm-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - run: npm test
       - store_artifacts:
-          path: dist
-          destination: dist
-
-  integration-test:
-    docker:
-      - image: circleci/node:17.2.0-browsers
-    steps:
-      - checkout
-      - *restore_yarn_cache
-      - run: yarn --ignore-engines
-      - *save_yarn_cache
-      - run: yarn deploy
-      - run: cd integration_test && yarn install && yarn test
-
-  publish:
-    docker:
-      - image: circleci/node:17.2.0
-    steps:
-      - checkout
-      - *restore_yarn_cache
-      - run: yarn install
-      - *save_yarn_cache
-      - run: yarn deploy
-      - run: yarn upload:chrome
-      - run: yarn publish-extension
-
+          path: build
+          destination: extension
 workflows:
-  version: 2
   build:
     jobs:
-      - build-test:
-          filters:
-            tags:
-              only: /^v.*/
-      - integration-test:
-          filters:
-            tags:
-              only: /^v.*/
-      - publish:
-          requires:
-            - build-test
-            - integration-test
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+      - build-test

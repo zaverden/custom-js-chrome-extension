@@ -2,7 +2,7 @@ import { action, computed, observable, makeObservable } from 'mobx'
 import { encodeSource, decodeSource, getHosts, setHosts } from 'libs'
 import isEqual from 'lodash.isequal'
 import sizeof from 'object-sizeof'
-import { js } from 'js-beautify'
+import { formatSource } from '../editor/format'
 import Store from 'stores'
 
 type Host = { isRegex: boolean; pattern: string } | string
@@ -147,6 +147,8 @@ export default class AppStore {
   }
 
   init = ({ domain, isRegex, pattern }: any = {}) => {
+    this.loading = true
+    this.loadError = null
     chrome.runtime.sendMessage(
       { method: 'getData', domain, isRegex, pattern },
       async (response) => {
@@ -185,7 +187,7 @@ export default class AppStore {
           this.draft = null
         }
         this.loadCustomjs(this.draft || this.truth)
-      }
+      },
     )
   }
 
@@ -211,7 +213,7 @@ export default class AppStore {
 
   loadDraft = () => {
     const { draft } = JSON.parse(
-      window.localStorage.getItem(this.domainKey) || '{}'
+      window.localStorage.getItem(this.domainKey) || '{}',
     )
     this.draft = draft
   }
@@ -220,7 +222,7 @@ export default class AppStore {
     this.draft = this.customjs
     window.localStorage.setItem(
       this.domainKey,
-      JSON.stringify({ draft: this.draft })
+      JSON.stringify({ draft: this.draft }),
     )
     this.saved = true
     this.autoSaveHandle = null
@@ -236,11 +238,19 @@ export default class AppStore {
     }
   }
 
-  beautify = () => {
-    const value = js(this.source, { indent_size: 2 })
-    this.onChangeSource(value)
+  beautify = async () => {
+    const source = this.source,
+      mode = this.mode,
+      domainKey = this.domainKey
+    const formatted = await formatSource(source, mode)
+    if (
+      source !== this.source ||
+      mode !== this.mode ||
+      domainKey !== this.domainKey
+    )
+      throw new Error('The script changed while formatting. Run Format again.')
+    this.onChangeSource(formatted)
   }
-
   onChangeSource = (value) => {
     this.source = value
     if (!this.enable) {
@@ -277,7 +287,7 @@ export default class AppStore {
           if (isEqual(customjs, this.customjs)) this.removeDraft()
           else this.saveDraft()
         }
-      }
+      },
     )
   }
 
@@ -294,7 +304,7 @@ export default class AppStore {
         return
       }
       this.hosts = this.hosts.filter(
-        (x) => getDomainKey(x) !== getDomainKey(host)
+        (x) => getDomainKey(x) !== getDomainKey(host),
       )
       this.loadCustomjs()
       this.removeDraft(getDomainKey(host))

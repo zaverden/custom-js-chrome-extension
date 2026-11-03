@@ -7,6 +7,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ProgressBarPlugin = require('progress-bar-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 
 const srcPath = (subdir) => {
   return path.join(__dirname, 'src/js', subdir)
@@ -55,13 +56,18 @@ const HtmlFiles = ['popup'].map(
       minify: {
         collapseWhitespace: true,
       },
-    })
+    }),
 )
 
 const entry = Object.assign(
   ...['popup', 'background', 'base', 'runner'].map((name) => ({
     [name]: path.join(__dirname, 'src', 'js', `${name}.tsx`),
-  }))
+  })),
+)
+
+entry['formatter.worker'] = path.join(
+  __dirname,
+  'src/js/editor/formatter.worker.ts',
 )
 
 const options = {
@@ -72,6 +78,12 @@ const options = {
   },
   module: {
     rules: [
+      {
+        test: /\.ttf$/,
+        type: 'asset/resource',
+        generator: { filename: 'fonts/[name][ext]' },
+        include: path.resolve(__dirname, 'node_modules/monaco-editor'),
+      },
       {
         test: /\.m?js/,
         type: 'javascript/auto',
@@ -140,7 +152,7 @@ const options = {
                 description: process.env.npm_package_description,
                 version: process.env.npm_package_version,
                 ...JSON.parse(content.toString()),
-              })
+              }),
             )
           },
         },
@@ -148,6 +160,11 @@ const options = {
     }),
     ...HtmlFiles,
     new ProgressBarPlugin(),
+    new MonacoWebpackPlugin({
+      languages: ['javascript', 'typescript', 'css'],
+      filename: 'monaco/[name].worker.js',
+      globalAPI: true,
+    }),
   ],
 }
 

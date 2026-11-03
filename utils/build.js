@@ -14,7 +14,7 @@ webpack(
       minimizer: [
         new TerserJSPlugin({
           test: /\.js(\?.*)?$/i,
-          parallel: true,
+          parallel: 2,
         }),
         new OptimizeCSSAssetsPlugin({}),
       ],
@@ -24,5 +24,5 @@ webpack(
     if (err) throw err
     console.log(stats.toString({ colors: false, modules: false }))
     if (stats.hasErrors()) process.exitCode = 1
-  }
+  },
 )

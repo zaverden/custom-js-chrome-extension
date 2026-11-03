@@ -19,8 +19,9 @@ const server = http.createServer((req, res) => {
       'chrome-extension://' +
         id +
         '/popup.html#/?domain=' +
-        encodeURIComponent(origin)
+        encodeURIComponent(origin),
     )
+    await popup.waitForSelector('#code-editor .monaco-editor')
     const versions = ['1.12.4', '2.2.4', '3.2.1'],
       data = { hosts: [] }
     for (const [i, v] of versions.entries()) {
@@ -45,7 +46,7 @@ const server = http.createServer((req, res) => {
     const r = await popup.evaluate(
       (backup) =>
         chrome.runtime.sendMessage({ method: 'import', backup, replace: true }),
-      data
+      data,
     )
     assert.equal(r.imported, 4, JSON.stringify(r))
     const target = await s.context.newPage()
@@ -54,11 +55,11 @@ const server = http.createServer((req, res) => {
       await target.waitForFunction(() => document.body.dataset.version)
       assert.equal(
         await target.evaluate(() => document.body.dataset.version),
-        v
+        v,
       )
       assert.equal(
         await target.evaluate(() => document.body.dataset.selected),
-        '1'
+        '1',
       )
       console.log('PASS jQuery ' + v + ' MAIN DOM under strict page CSP')
     }
@@ -66,7 +67,7 @@ const server = http.createServer((req, res) => {
     await target.waitForFunction(() => document.body.dataset.version)
     assert.equal(
       await target.evaluate(() => document.body.dataset.version),
-      '3.2.1'
+      '3.2.1',
     )
     assert.equal(await target.evaluate(() => typeof window.jQuery), 'undefined')
     console.log('PASS jQuery 3.2.1 USER_SCRIPT isolation')
