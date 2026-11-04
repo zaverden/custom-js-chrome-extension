@@ -11,8 +11,8 @@ scope.onmessage = async ({ data }) => {
     const formatted = await format(source, {
       parser: language === 'css' ? 'css' : 'babel',
       plugins: [babel, estree, postcss],
-      semi: false,
-      singleQuote: true,
+      semi: true,
+      singleQuote: false,
       tabWidth: 2,
       printWidth: 90,
       trailingComma: 'none',

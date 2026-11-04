@@ -85,17 +85,20 @@ const ok = (name) => {
         ),
     )
     ok('syntax errors are diagnosed in the editor')
-    const raw = 'const item={name:"hello",items:[1,2]};'
+    const raw = "const item={name:'hello',items:[1,2]}"
     await set(raw)
     await popup.getByRole('button', { name: 'Format', exact: true }).click()
     await popup.waitForFunction(() =>
       window.monaco.editor
         .getModels()[0]
         .getValue()
-        .includes("const item = { name: 'hello', items: [1, 2] }"),
+        .includes('const item = { name: "hello", items: [1, 2] };'),
     )
     const formatted = await get()
-    assert.notEqual(formatted, raw)
+    assert.equal(
+      formatted.replace(/\r\n/g, '\n'),
+      'const item = { name: "hello", items: [1, 2] };\n',
+    )
     await popup.locator('#code-editor .monaco-editor').click()
     await popup.keyboard.press('Control+z')
     assert.equal(await get(), raw)
